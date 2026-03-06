@@ -15,6 +15,8 @@ JavaWeb项目测试和部署，课程总结回顾
 
 # quick-start
 
+[给完全新手的「从配置到启动」完整步骤](#给完全新手的从配置到启动完整步骤)
+
 [1项目基本配置](#项目基本配置)
 
 [2基本框架开发](#基本框架开发)
@@ -30,6 +32,140 @@ JavaWeb项目测试和部署，课程总结回顾
 [7新增点赞和点踩功能,使用Redis实现](#新增点赞和点踩功能，使用Redis实现)
 
 [8新增异步消息功能,新增邮件发送组件](#新增异步消息功能 新增邮件发送组件)
+
+
+## 给完全新手的「从配置到启动」完整步骤
+
+> 你如果是第一次做 Java Web 项目，直接按下面步骤做就可以。
+> 本项目是 `Spring Boot 1.4 + MySQL + Redis + Maven`，**务必使用 JDK 8**。
+
+### 0）先准备好环境（最重要）
+
+1. 安装 **JDK 8（1.8）**
+2. 安装 **Maven 3.6+**
+3. 安装并启动 **MySQL 5.7/8.0**
+4. 安装并启动 **Redis 6+**（用于点赞/异步消息等功能）
+
+检查版本：
+
+```bash
+java -version
+mvn -version
+mysql --version
+redis-server --version
+```
+
+如果 `java -version` 不是 1.8，请先切换到 JDK 8 再继续。
+
+---
+
+### 1）进入项目目录并下载依赖
+
+```bash
+cd /home/runner/work/toutiao/toutiao
+mvn -q -DskipTests compile
+```
+
+> 首次执行会下载依赖，时间会稍长。
+
+---
+
+### 2）创建数据库并导入表结构
+
+先登录 MySQL：
+
+```bash
+mysql -u root -p
+```
+
+在 MySQL 里执行：
+
+```sql
+CREATE DATABASE IF NOT EXISTS toutiao DEFAULT CHARACTER SET utf8;
+USE toutiao;
+SOURCE /home/runner/work/toutiao/toutiao/src/test/resources/init-schema.sql;
+```
+
+---
+
+### 3）修改数据库连接配置
+
+编辑文件：
+
+`/home/runner/work/toutiao/toutiao/src/main/resources/application.properties`
+
+至少确认这三项和你的本机一致：
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/toutiao?useUnicode=true&characterEncoding=utf8&useSSL=false
+spring.datasource.username=root
+spring.datasource.password=1234
+```
+
+如果你的 MySQL 密码不是 `1234`，请改成你的真实密码。
+
+---
+
+### 4）启动 Redis（如果你本机还没启动）
+
+```bash
+redis-server
+```
+
+另开一个终端验证：
+
+```bash
+redis-cli ping
+```
+
+返回 `PONG` 说明 Redis 正常。
+
+---
+
+### 5）启动项目
+
+在项目目录执行：
+
+```bash
+cd /home/runner/work/toutiao/toutiao
+mvn spring-boot:run
+```
+
+看到类似日志表示启动成功：
+
+```text
+Tomcat started on port(s): 8088
+Started ToutiaoApplication
+```
+
+---
+
+### 6）浏览器访问
+
+打开：
+
+`http://localhost:8088/`
+
+---
+
+### 7）常见问题（新手高频）
+
+1. **启动时报反射/插件兼容错误**
+    - 现象：`Unable to make field ... accessible`、`Could not initialize class org.springframework.cglib...`
+    - 原因：多半是用了 JDK 9+。
+    - 解决：切换到 **JDK 8** 再运行。
+
+2. **数据库连接失败**
+    - 检查 MySQL 是否启动；
+    - 检查 `application.properties` 的用户名/密码；
+    - 确认数据库名是 `toutiao`，且已执行 `init-schema.sql`。
+
+3. **8088 端口被占用**
+    - 修改 `application.properties` 中 `server.port=8088` 为其他端口（如 8089）后重启。
+
+4. **Redis 连接失败**
+    - 先执行 `redis-cli ping` 看是否 `PONG`；
+    - 如果未启动，先运行 `redis-server`。
 
 
 
@@ -186,5 +322,4 @@ AOP和IOC
 <html>
 <!--在这里插入内容-->
 </html>
-
 

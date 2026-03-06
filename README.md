@@ -62,7 +62,7 @@ redis-server --version
 ### 1）进入项目目录并下载依赖
 
 ```bash
-cd /home/runner/work/toutiao/toutiao
+cd <你的项目目录>/toutiao
 mvn -q -DskipTests compile
 ```
 
@@ -83,16 +83,14 @@ mysql -u root -p
 ```sql
 CREATE DATABASE IF NOT EXISTS toutiao DEFAULT CHARACTER SET utf8;
 USE toutiao;
-SOURCE /home/runner/work/toutiao/toutiao/src/test/resources/init-schema.sql;
+SOURCE src/test/resources/init-schema.sql;
 ```
 
 ---
 
 ### 3）修改数据库连接配置
 
-编辑文件：
-
-`/home/runner/work/toutiao/toutiao/src/main/resources/application.properties`
+编辑文件：`src/main/resources/application.properties`
 
 至少确认这三项和你的本机一致：
 
@@ -127,7 +125,6 @@ redis-cli ping
 在项目目录执行：
 
 ```bash
-cd /home/runner/work/toutiao/toutiao
 mvn spring-boot:run
 ```
 
@@ -322,4 +319,3 @@ AOP和IOC
 <html>
 <!--在这里插入内容-->
 </html>
-

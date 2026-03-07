@@ -34,136 +34,135 @@ JavaWeb项目测试和部署，课程总结回顾
 [8新增异步消息功能,新增邮件发送组件](#新增异步消息功能 新增邮件发送组件)
 
 
-## 给完全新手的「Windows 从安装到启动」完整步骤
+## 给完全新手的「从配置到启动」完整步骤
 
-> 如果你是 Windows 新手，按下面步骤一条条做即可。  
-> 本项目是 `Spring Boot 1.4 + MySQL + Redis + Maven`，**务必使用 JDK 8**（不是 JDK 11/17）。
+> 你如果是第一次做 Java Web 项目，直接按下面步骤做就可以。
+> 本项目是 `Spring Boot 1.4 + MySQL + Redis + Maven`，**务必使用 JDK 8**。
 
-### 0）先准备软件（全部安装在 Windows 上）
+### 0）先准备好环境（最重要）
 
-1. 安装 **JDK 8（x64）**
+1. 安装 **JDK 8（1.8）**
 2. 安装 **Maven 3.6+**
-3. 安装 **MySQL 5.7/8.0**
-4. 安装 **Redis（Windows 可用发行版，如 Memurai）**
+3. 安装并启动 **MySQL 5.7/8.0**
+4. 安装并启动 **Redis 6+**（用于点赞/异步消息等功能）
 
-### 1）配置 JDK 8（最关键）
+检查版本：
 
-1. 在 Windows 搜索并打开：`编辑系统环境变量` -> `环境变量`
-2. 新建系统变量：
-   - 变量名：`JAVA_HOME`
-   - 变量值：你的 JDK8 安装目录（示例：`C:\Program Files\Eclipse Adoptium\jdk-8.0.442.6-hotspot`）
-3. 编辑系统变量 `Path`，新增：`%JAVA_HOME%\bin`
-4. 重新打开 PowerShell，执行：
-
-```powershell
+```bash
 java -version
+mvn -version
+mysql --version
+redis-server --version
 ```
 
-必须看到 `1.8.0_xxx` 才能继续。
+如果 `java -version` 不是 1.8，请先切换到 JDK 8 再继续。
 
-### 2）配置 Maven
+---
 
-1. 下载并解压 Maven（例如解压到 `D:\dev\apache-maven-3.9.9`）
-2. 新建系统变量：
-   - 变量名：`MAVEN_HOME`
-   - 变量值：`D:\dev\apache-maven-3.9.9`
-3. 编辑系统变量 `Path`，新增：`%MAVEN_HOME%\bin`
-4. 重新打开 PowerShell，执行：
+### 1）进入项目目录并下载依赖
 
-```powershell
-mvn -v
-```
-
-确认输出中的 Java 版本是 1.8。
-
-### 3）进入项目并下载依赖
-
-```powershell
-cd D:\your-path\toutiao
+```bash
+cd <你的项目目录>/toutiao
 mvn -q -DskipTests compile
 ```
 
 > 首次执行会下载依赖，时间会稍长。
 
-### 4）初始化数据库（MySQL）
+---
+
+### 2）创建数据库并导入表结构
 
 先登录 MySQL：
 
-```powershell
+```bash
 mysql -u root -p
 ```
 
-在 MySQL 命令行执行（把路径改成你自己本机项目路径）：
+在 MySQL 里执行：
 
 ```sql
 CREATE DATABASE IF NOT EXISTS toutiao DEFAULT CHARACTER SET utf8;
 USE toutiao;
-SOURCE D:/your-path/toutiao/src/test/resources/init-schema.sql;
-SHOW TABLES;
+SOURCE src/test/resources/init-schema.sql;
 ```
 
-### 5）修改项目数据库配置
+---
 
-编辑文件：`src/main/resources/application.properties`  
-确认下面配置和你的电脑一致：
+### 3）修改数据库连接配置
+
+编辑文件：`src/main/resources/application.properties`
+
+至少确认这三项和你的本机一致：
 
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/toutiao?useUnicode=true&characterEncoding=utf8&useSSL=false
 spring.datasource.username=root
-spring.datasource.password=你的MySQL密码
+spring.datasource.password=1234
 ```
 
-### 6）启动 Redis 并验证
+如果你的 MySQL 密码不是 `1234`，请改成你的真实密码。
 
-启动 Redis 服务后，在 PowerShell 执行：
+---
 
-```powershell
+### 4）启动 Redis（如果你本机还没启动）
+
+```bash
+redis-server
+```
+
+另开一个终端验证：
+
+```bash
 redis-cli ping
 ```
 
 返回 `PONG` 说明 Redis 正常。
 
-### 7）启动项目
+---
 
-```powershell
-cd D:\your-path\toutiao
+### 5）启动项目
+
+在项目目录执行：
+
+```bash
 mvn spring-boot:run
 ```
 
-看到以下日志即为启动成功：
+看到类似日志表示启动成功：
 
 ```text
 Tomcat started on port(s): 8088
 Started ToutiaoApplication
 ```
 
-### 8）访问页面
+---
 
-浏览器打开：`http://localhost:8088/`
+### 6）浏览器访问
 
-### 9）常见问题（含你日志里的情况）
+打开：
+
+`http://localhost:8088/`
+
+---
+
+### 7）常见问题（新手高频）
 
 1. **启动时报反射/插件兼容错误**
-   - 现象：`Unable to make field ... accessible`、`Could not initialize class org.springframework.cglib...`
-   - 原因：通常是用了 JDK 9+。
-   - 解决：切换到 **JDK 8** 再运行。
+    - 现象：`Unable to make field ... accessible`、`Could not initialize class org.springframework.cglib...`
+    - 原因：多半是用了 JDK 9+。
+    - 解决：切换到 **JDK 8** 再运行。
 
-2. **看到下面两行日志，不知道是不是报错**
-   - `Mapped "{[/setting]}" ...`
-   - `Mapped "{[/error]}" ...`
-   - 说明：这是 Spring Boot 启动时打印的 **INFO 级别路由映射日志**，表示接口注册成功，**不是报错**。
+2. **数据库连接失败**
+    - 检查 MySQL 是否启动；
+    - 检查 `application.properties` 的用户名/密码；
+    - 确认数据库名是 `toutiao`，且已执行 `init-schema.sql`。
 
-3. **数据库连接失败**
-   - 检查 MySQL 是否启动；
-   - 检查 `application.properties` 的用户名/密码；
-   - 确认数据库名是 `toutiao`，且已执行 `init-schema.sql`。
+3. **8088 端口被占用**
+    - 修改 `application.properties` 中 `server.port=8088` 为其他端口（如 8089）后重启。
 
-4. **8088 端口被占用**
-   - 修改 `application.properties` 中 `server.port=8088` 为其他端口（如 8089）后重启。
-
-5. **Redis 连接失败**
-   - 先执行 `redis-cli ping` 看是否 `PONG`；
-   - 如果未启动，先启动 Redis 服务。
+4. **Redis 连接失败**
+    - 先执行 `redis-cli ping` 看是否 `PONG`；
+    - 如果未启动，先运行 `redis-server`。
 
 
 
